@@ -1,0 +1,228 @@
+// ------------------------------------------------------------------
+// Schul-Cockpit – Prisma Schema
+// Datenmodell für Fächer, Hausaufgaben, Tagesnotizen,
+// Klassenarbeiten, Lernaufgaben und Dateianhänge.
+// ------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------- Enums ------------------------------
+
+/// Rolle eines Nutzers. Die Schüleransicht steht im Mittelpunkt,
+/// Eltern erhalten nur einen groben Überblick (read-only).
+enum Role {
+  STUDENT
+  PARENT
+}
+
+/// Bearbeitungsstatus einer Hausaufgabe.
+enum HomeworkStatus {
+  OFFEN
+  ANGEFANGEN
+  ERLEDIGT
+}
+
+/// Ampel für den Verständnis-/Lernstatus.
+enum Ampel {
+  GRUEN
+  GELB
+  ROT
+}
+
+/// Status einer (abgeleiteten) Lernaufgabe.
+enum LearnTaskStatus {
+  OFFEN
+  ANGEFANGEN
+  ERLEDIGT
+}
+
+/// Priorität einer Lernaufgabe.
+enum Prioritaet {
+  NIEDRIG
+  MITTEL
+  HOCH
+}
+
+/// Herkunft einer Lernaufgabe (woraus wurde sie erzeugt?).
+enum QuelleTyp {
+  KLASSENARBEIT
+  TAGESNOTIZ
+  MANUELL
+}
+
+/// Typ der Entität, an der ein Dateianhang hängt (polymorph).
+enum EntityTyp {
+  HAUSAUFGABE
+  TAGESNOTIZ
+  KLASSENARBEIT
+}
+
+// ----------------------------- Modelle ----------------------------
+
+/// Nutzerkonto. Login per E-Mail + Passwort (gehasht).
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  faecher       Fach[]
+  hausaufgaben  Hausaufgabe[]
+  tagesnotizen  Tagesnotiz[]
+  klassenarbeiten Klassenarbeit[]
+  lernaufgaben  Lernaufgabe[]
+
+  @@map("users")
+}
+
+/// Schulfach mit Farbe (für die Ampel-/Karten-Optik) und optionalem Lehrer.
+model Fach {
+  id        String   @id @default(cuid())
+  name      String
+  farbe     String   @default("#6366f1") // Hex-Farbe für UI
+  lehrer    String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hausaufgaben    Hausaufgabe[]
+  tagesnotizen    Tagesnotiz[]
+  klassenarbeiten Klassenarbeit[]
+  lernaufgaben    Lernaufgabe[]
+
+  @@index([userId])
+  @@map("faecher")
+}
+
+/// Hausaufgabe pro Fach mit Abgabedatum, Aufwand und Status.
+model Hausaufgabe {
+  id            String         @id @default(cuid())
+  fachId        String
+  userId        String
+  titel         String
+  beschreibung  String?
+  abgabedatum   DateTime
+  aufwandMinuten Int?
+  status        HomeworkStatus @default(OFFEN)
+  hilfeNoetig   Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  fach      Fach          @relation(fields: [fachId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anhaenge  Dateianhang[]
+
+  @@index([userId])
+  @@index([fachId])
+  @@index([abgabedatum])
+  @@map("hausaufgaben")
+}
+
+/// Tageszusammenfassung pro Fach: Thema, Verständnis-Ampel, Unklarheiten.
+model Tagesnotiz {
+  id                   String   @id @default(cuid())
+  datum                DateTime
+  fachId               String
+  userId               String
+  thema                String
+  zusammenfassung      String?
+  verstandenStatus     Ampel    @default(GELB)
+  unklarheiten         String?
+  klassenarbeitRelevant Boolean @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  fach     Fach          @relation(fields: [fachId], references: [id], onDelete: Cascade)
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anhaenge Dateianhang[]
+
+  @@index([userId])
+  @@index([fachId])
+  @@index([datum])
+  @@map("tagesnotizen")
+}
+
+/// Klassenarbeit pro Fach mit Themen, Materialien und Lernstatus.
+model Klassenarbeit {
+  id          String   @id @default(cuid())
+  fachId      String
+  userId      String
+  datum       DateTime
+  titel       String
+  themen      String?  // mehrzeilig: ein Thema pro Zeile
+  materialien String?
+  lernstatus  Ampel    @default(ROT)
+  notiz       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fach        Fach          @relation(fields: [fachId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anhaenge    Dateianhang[]
+  lernaufgaben Lernaufgabe[]
+
+  @@index([userId])
+  @@index([fachId])
+  @@index([datum])
+  @@map("klassenarbeiten")
+}
+
+/// Abgeleitete Lern-/Arbeitsaufgabe (z. B. aus einer Klassenarbeit).
+/// Grundlage für den späteren Lernplan.
+model Lernaufgabe {
+  id           String          @id @default(cuid())
+  fachId       String
+  userId       String
+  quelleTyp    QuelleTyp       @default(MANUELL)
+  quelleId     String?         // optionale Referenz auf Klassenarbeit/Tagesnotiz
+  titel        String
+  beschreibung String?
+  faelligAm    DateTime?
+  status       LearnTaskStatus @default(OFFEN)
+  prioritaet   Prioritaet      @default(MITTEL)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  fach          Fach           @relation(fields: [fachId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  klassenarbeit Klassenarbeit? @relation(fields: [quelleId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([fachId])
+  @@map("lernaufgaben")
+}
+
+/// Polymorpher Dateianhang. Verweist je nach entityTyp auf
+/// Hausaufgabe, Tagesnotiz oder Klassenarbeit.
+model Dateianhang {
+  id         String    @id @default(cuid())
+  entityTyp  EntityTyp
+  entityId   String
+  dateiname  String
+  pfad       String    // relativer Pfad im UPLOAD_DIR
+  mimeType   String
+  groesse    Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  // Optionale Rückverweise (nur einer ist je nach entityTyp gesetzt)
+  hausaufgabe    Hausaufgabe?   @relation(fields: [hausaufgabeId], references: [id], onDelete: Cascade)
+  hausaufgabeId  String?
+  tagesnotiz     Tagesnotiz?    @relation(fields: [tagesnotizId], references: [id], onDelete: Cascade)
+  tagesnotizId   String?
+  klassenarbeit  Klassenarbeit? @relation(fields: [klassenarbeitId], references: [id], onDelete: Cascade)
+  klassenarbeitId String?
+
+  @@index([entityTyp, entityId])
+  @@map("dateianhaenge")
+}

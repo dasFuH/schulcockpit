@@ -1,0 +1,2 @@
+# Bitte nicht entfernen – legt den Datenbank-Provider für Migrationen fest.
+provider = "postgresql"

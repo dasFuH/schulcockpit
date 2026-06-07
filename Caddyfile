@@ -1,0 +1,17 @@
+# ------------------------------------------------------------------
+# Caddy Reverse Proxy für Schul-Cockpit
+# Holt automatisch ein Let's-Encrypt-Zertifikat für APP_DOMAIN.
+# Den Upload-Limit-Wert ggf. an die App (10 MB) angleichen.
+# ------------------------------------------------------------------
+{$APP_DOMAIN} {
+	encode gzip
+	# E-Mail für ACME/Let's Encrypt
+	tls {$ACME_EMAIL}
+
+	# Erlaubt grössere Uploads (Fotos/PDFs)
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy web:3000
+}

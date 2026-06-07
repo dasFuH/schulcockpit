@@ -1,0 +1,73 @@
+# ------------------------------------------------------------------
+# Schul-Cockpit – Docker Compose
+# Dienste: db (PostgreSQL), web (Next.js), caddy (Reverse Proxy + HTTPS)
+#
+# Lokal:   docker compose up --build
+# Server:  zusätzlich Profil "proxy" aktivieren -> echtes HTTPS via Caddy
+#          docker compose --profile proxy up -d --build
+# ------------------------------------------------------------------
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cockpit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-schulcockpit}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cockpit} -d ${POSTGRES_DB:-schulcockpit}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Port nur lokal exponieren (zum Debuggen). Auf dem Server ggf. entfernen.
+    ports:
+      - "5432:5432"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Im Compose-Netz heißt der DB-Host "db".
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-cockpit}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-schulcockpit}?schema=public"
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET muss gesetzt sein}
+      UPLOAD_DIR: /app/uploads
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      SEED_ON_START: ${SEED_ON_START:-false}
+      NODE_ENV: production
+    volumes:
+      # Uploads persistent ausserhalb des Containers
+      - uploads_data:/app/uploads
+    # Lokal direkt erreichbar; hinter Caddy kann dieser Port entfallen.
+    ports:
+      - "3000:3000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    profiles: ["proxy"]
+    depends_on:
+      - web
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  db_data:
+  uploads_data:
+  caddy_data:
+  caddy_config:
