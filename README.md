@@ -123,6 +123,14 @@ docker compose up --build
    docker compose --profile proxy up -d --build
    ```
    Caddy holt automatisch ein Let's-Encrypt-Zertifikat.
+
+   Wenn du Host-Ports ändern musst, ändere nur die linke Seite des Port-Mappings
+   über `.env`, z. B. `WEB_PORT=8080`. Der Web-Container hört intern weiterhin
+   auf `3000`, deshalb muss das effektive Mapping `8080:3000` sein. Caddy proxyt
+   im Compose-Netz ebenfalls weiter auf `web:3000`.
+
+   Für öffentliches HTTPS mit Let's Encrypt müssen `HTTP_PORT=80` und
+   `HTTPS_PORT=443` von außen erreichbar sein.
 4. Erstkonto anlegen: einmalig `SEED_ON_START=true` setzen **oder** Seed manuell
    ausführen:
    ```bash

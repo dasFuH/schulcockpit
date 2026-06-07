@@ -37,11 +37,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma: Schema, Migrationen, Engine + CLI für "migrate deploy" beim Start
+# Prisma + CLI-Abhaengigkeiten fuer "migrate deploy" und optionales Seeding beim Start
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules ./node_modules
 
 # Start-Skript (führt Migrationen aus und startet den Server)
 COPY --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh

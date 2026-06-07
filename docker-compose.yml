@@ -24,7 +24,7 @@ services:
       retries: 10
     # Port nur lokal exponieren (zum Debuggen). Auf dem Server ggf. entfernen.
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
 
   web:
     build:
@@ -42,12 +42,14 @@ services:
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       SEED_ON_START: ${SEED_ON_START:-false}
       NODE_ENV: production
+      PORT: 3000
     volumes:
       # Uploads persistent ausserhalb des Containers
       - uploads_data:/app/uploads
     # Lokal direkt erreichbar; hinter Caddy kann dieser Port entfallen.
+    # Bei anderem Host-Port nur links ändern: WEB_PORT=8080 ergibt 8080:3000.
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3000}:3000"
 
   caddy:
     image: caddy:2-alpine
@@ -59,8 +61,8 @@ services:
       APP_DOMAIN: ${APP_DOMAIN:-localhost}
       ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
     ports:
-      - "80:80"
-      - "443:443"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
