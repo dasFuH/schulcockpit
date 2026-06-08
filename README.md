@@ -131,6 +131,17 @@ docker compose up --build
 
    Für öffentliches HTTPS mit Let's Encrypt müssen `HTTP_PORT=80` und
    `HTTPS_PORT=443` von außen erreichbar sein.
+
+   Wenn der Start auf dem VPS fehlschlägt, zuerst diese Diagnose ausführen:
+   ```bash
+   docker compose --profile proxy ps
+   docker compose logs --no-color --tail=120 db web caddy
+   docker compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c 'SELECT 1;'
+   ```
+   Häufige Ursache: Das Volume `db_data` wurde schon mit einem alten
+   `POSTGRES_PASSWORD` initialisiert. PostgreSQL übernimmt ein später geändertes
+   Passwort aus `.env` nicht automatisch. Dann entweder das alte Passwort wieder
+   eintragen oder die Daten sichern und die DB gezielt neu initialisieren.
 4. Erstkonto anlegen: einmalig `SEED_ON_START=true` setzen **oder** Seed manuell
    ausführen:
    ```bash
