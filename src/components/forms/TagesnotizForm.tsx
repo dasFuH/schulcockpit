@@ -10,6 +10,7 @@ import {
 import { createTagesnotiz, updateTagesnotiz } from "@/app/actions/notizen";
 import { toDateInputValue } from "@/lib/dates";
 import type { Ampel } from "@prisma/client";
+import { useSheetClose } from "@/components/Sheet";
 
 export interface TagesnotizInitial {
   id: string;
@@ -29,9 +30,10 @@ export function TagesnotizForm({
 }: {
   faecher: FachOption[];
   initial?: TagesnotizInitial;
-  onDone: () => void;
+  onDone?: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const closeSheet = useSheetClose();
 
   async function handle(formData: FormData) {
     if (initial) {
@@ -40,7 +42,7 @@ export function TagesnotizForm({
       await createTagesnotiz(formData);
     }
     formRef.current?.reset();
-    onDone();
+    (onDone ?? closeSheet)();
   }
 
   return (

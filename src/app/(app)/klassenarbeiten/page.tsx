@@ -61,22 +61,19 @@ export default async function KlassenarbeitenPage() {
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <Sheet trigger="✏️" title="Arbeit bearbeiten">
-                      {(close) => (
-                        <KlassenarbeitForm
-                          faecher={faecher}
-                          initial={{
-                            id: ka.id,
-                            fachId: ka.fachId,
-                            datum: ka.datum,
-                            titel: ka.titel,
-                            themen: ka.themen,
-                            materialien: ka.materialien,
-                            lernstatus: ka.lernstatus,
-                            notiz: ka.notiz,
-                          }}
-                          onDone={close}
-                        />
-                      )}
+                      <KlassenarbeitForm
+                        faecher={faecher}
+                        initial={{
+                          id: ka.id,
+                          fachId: ka.fachId,
+                          datum: ka.datum,
+                          titel: ka.titel,
+                          themen: ka.themen,
+                          materialien: ka.materialien,
+                          lernstatus: ka.lernstatus,
+                          notiz: ka.notiz,
+                        }}
+                      />
                     </Sheet>
                     <DeleteButton action={deleteKlassenarbeit.bind(null, ka.id)} />
                   </div>
@@ -180,7 +177,7 @@ export default async function KlassenarbeitenPage() {
 
       {faecher.length > 0 && (
         <Sheet trigger="+" title="Neue Klassenarbeit" fab>
-          {(close) => <KlassenarbeitForm faecher={faecher} onDone={close} />}
+          <KlassenarbeitForm faecher={faecher} />
         </Sheet>
       )}
     </div>

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { SubmitButton } from "./fields";
 import { createFach, updateFach } from "@/app/actions/faecher";
 import { fachFarben } from "@/lib/labels";
+import { useSheetClose } from "@/components/Sheet";
 
 export interface FachInitial {
   id: string;
@@ -17,10 +18,11 @@ export function FachForm({
   onDone,
 }: {
   initial?: FachInitial;
-  onDone: () => void;
+  onDone?: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [farbe, setFarbe] = useState(initial?.farbe ?? fachFarben[0].wert);
+  const closeSheet = useSheetClose();
 
   async function handle(formData: FormData) {
     if (initial) {
@@ -29,7 +31,7 @@ export function FachForm({
       await createFach(formData);
     }
     formRef.current?.reset();
-    onDone();
+    (onDone ?? closeSheet)();
   }
 
   return (

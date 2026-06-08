@@ -7,6 +7,7 @@ import {
   updateHausaufgabe,
 } from "@/app/actions/hausaufgaben";
 import { toDateInputValue } from "@/lib/dates";
+import { useSheetClose } from "@/components/Sheet";
 
 export interface HausaufgabeInitial {
   id: string;
@@ -28,9 +29,10 @@ export function HausaufgabeForm({
 }: {
   faecher: FachOption[];
   initial?: HausaufgabeInitial;
-  onDone: () => void;
+  onDone?: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const closeSheet = useSheetClose();
 
   async function handle(formData: FormData) {
     if (initial) {
@@ -39,7 +41,7 @@ export function HausaufgabeForm({
       await createHausaufgabe(formData);
     }
     formRef.current?.reset();
-    onDone();
+    (onDone ?? closeSheet)();
   }
 
   return (

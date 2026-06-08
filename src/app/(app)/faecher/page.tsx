@@ -57,17 +57,14 @@ export default async function FaecherPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Sheet trigger="✏️" title="Fach bearbeiten">
-                  {(close) => (
-                    <FachForm
-                      initial={{
-                        id: f.id,
-                        name: f.name,
-                        farbe: f.farbe,
-                        lehrer: f.lehrer,
-                      }}
-                      onDone={close}
-                    />
-                  )}
+                  <FachForm
+                    initial={{
+                      id: f.id,
+                      name: f.name,
+                      farbe: f.farbe,
+                      lehrer: f.lehrer,
+                    }}
+                  />
                 </Sheet>
                 <DeleteButton action={deleteFach.bind(null, f.id)} />
               </div>
@@ -77,7 +74,7 @@ export default async function FaecherPage() {
       )}
 
       <Sheet trigger="+ Fach hinzufügen" title="Neues Fach">
-        {(close) => <FachForm onDone={close} />}
+        <FachForm />
       </Sheet>
     </div>
   );

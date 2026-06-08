@@ -1,15 +1,28 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  type ReactNode,
+} from "react";
+
+const SheetCloseContext = createContext<() => void>(() => {});
+
+export function useSheetClose(): () => void {
+  return useContext(SheetCloseContext);
+}
 
 /**
  * Mobile Bottom-Sheet mit Auslöse-Button (FAB oder normaler Button).
  * Schließt automatisch, nachdem das enthaltene Formular erfolgreich
- * abgeschickt wurde (über das onSuccess-Signal des Kindes).
+ * abgeschickt wurde (über useSheetClose im enthaltenen Client-Formular).
  *
  * Verwendung:
  *   <Sheet trigger="+ Neu" title="Hausaufgabe">
- *     {(close) => <MeinFormular onDone={close} />}
+ *     <MeinFormular />
  *   </Sheet>
  */
 export function Sheet({
@@ -18,9 +31,9 @@ export function Sheet({
   children,
   fab = false,
 }: {
-  trigger: React.ReactNode;
+  trigger: ReactNode;
   title: string;
-  children: (close: () => void) => React.ReactNode;
+  children: ReactNode;
   fab?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -80,7 +93,9 @@ export function Sheet({
                 ×
               </button>
             </div>
-            {children(close)}
+            <SheetCloseContext.Provider value={close}>
+              {children}
+            </SheetCloseContext.Provider>
           </div>
         </div>
       )}

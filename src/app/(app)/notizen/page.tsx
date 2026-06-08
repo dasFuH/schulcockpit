@@ -56,22 +56,19 @@ export default async function NotizenPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <Sheet trigger="✏️" title="Notiz bearbeiten">
-                    {(close) => (
-                      <TagesnotizForm
-                        faecher={faecher}
-                        initial={{
-                          id: n.id,
-                          fachId: n.fachId,
-                          datum: n.datum,
-                          thema: n.thema,
-                          zusammenfassung: n.zusammenfassung,
-                          verstandenStatus: n.verstandenStatus,
-                          unklarheiten: n.unklarheiten,
-                          klassenarbeitRelevant: n.klassenarbeitRelevant,
-                        }}
-                        onDone={close}
-                      />
-                    )}
+                    <TagesnotizForm
+                      faecher={faecher}
+                      initial={{
+                        id: n.id,
+                        fachId: n.fachId,
+                        datum: n.datum,
+                        thema: n.thema,
+                        zusammenfassung: n.zusammenfassung,
+                        verstandenStatus: n.verstandenStatus,
+                        unklarheiten: n.unklarheiten,
+                        klassenarbeitRelevant: n.klassenarbeitRelevant,
+                      }}
+                    />
                   </Sheet>
                   <DeleteButton action={deleteTagesnotiz.bind(null, n.id)} />
                 </div>
@@ -106,7 +103,7 @@ export default async function NotizenPage() {
 
       {faecher.length > 0 && (
         <Sheet trigger="+" title="Neue Tagesnotiz" fab>
-          {(close) => <TagesnotizForm faecher={faecher} onDone={close} />}
+          <TagesnotizForm faecher={faecher} />
         </Sheet>
       )}
     </div>

@@ -13,6 +13,7 @@ import {
 } from "@/app/actions/klassenarbeiten";
 import { toDateInputValue } from "@/lib/dates";
 import type { Ampel } from "@prisma/client";
+import { useSheetClose } from "@/components/Sheet";
 
 export interface KlassenarbeitInitial {
   id: string;
@@ -32,9 +33,10 @@ export function KlassenarbeitForm({
 }: {
   faecher: FachOption[];
   initial?: KlassenarbeitInitial;
-  onDone: () => void;
+  onDone?: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const closeSheet = useSheetClose();
 
   async function handle(formData: FormData) {
     if (initial) {
@@ -43,7 +45,7 @@ export function KlassenarbeitForm({
       await createKlassenarbeit(formData);
     }
     formRef.current?.reset();
-    onDone();
+    (onDone ?? closeSheet)();
   }
 
   return (

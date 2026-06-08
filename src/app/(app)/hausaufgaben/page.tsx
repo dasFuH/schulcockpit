@@ -64,22 +64,19 @@ export default async function HausaufgabenPage() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <Sheet trigger="✏️" title="Hausaufgabe bearbeiten">
-                        {(close) => (
-                          <HausaufgabeForm
-                            faecher={faecher}
-                            initial={{
-                              id: ha.id,
-                              fachId: ha.fachId,
-                              titel: ha.titel,
-                              beschreibung: ha.beschreibung,
-                              abgabedatum: ha.abgabedatum,
-                              aufwandMinuten: ha.aufwandMinuten,
-                              status: ha.status,
-                              hilfeNoetig: ha.hilfeNoetig,
-                            }}
-                            onDone={close}
-                          />
-                        )}
+                        <HausaufgabeForm
+                          faecher={faecher}
+                          initial={{
+                            id: ha.id,
+                            fachId: ha.fachId,
+                            titel: ha.titel,
+                            beschreibung: ha.beschreibung,
+                            abgabedatum: ha.abgabedatum,
+                            aufwandMinuten: ha.aufwandMinuten,
+                            status: ha.status,
+                            hilfeNoetig: ha.hilfeNoetig,
+                          }}
+                        />
                       </Sheet>
                       <DeleteButton action={deleteHausaufgabe.bind(null, ha.id)} />
                     </div>
@@ -176,7 +173,7 @@ export default async function HausaufgabenPage() {
 
       {faecher.length > 0 && (
         <Sheet trigger="+" title="Neue Hausaufgabe" fab>
-          {(close) => <HausaufgabeForm faecher={faecher} onDone={close} />}
+          <HausaufgabeForm faecher={faecher} />
         </Sheet>
       )}
     </div>
