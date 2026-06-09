@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { LoginForm } from "./LoginForm";
 
@@ -23,6 +24,13 @@ export default async function LoginPage() {
         </div>
 
         <LoginForm />
+
+        <p className="mt-6 text-center text-sm text-slate-500">
+          Noch kein Konto?{" "}
+          <Link href="/registrieren" className="font-medium text-brand">
+            Registrieren
+          </Link>
+        </p>
 
         <p className="mt-6 text-center text-xs text-slate-400">
           Demo: schuelerin@cockpit.local / schueler123

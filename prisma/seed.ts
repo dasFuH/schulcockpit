@@ -36,12 +36,15 @@ async function main() {
   // Elternteil (nur Überblick)
   await prisma.user.upsert({
     where: { email: "eltern@cockpit.local" },
-    update: {},
+    update: {
+      managedStudentId: schuelerin.id,
+    },
     create: {
       email: "eltern@cockpit.local",
       name: "Elternteil",
       passwordHash: parentPw,
       role: Role.PARENT,
+      managedStudentId: schuelerin.id,
     },
   });
 

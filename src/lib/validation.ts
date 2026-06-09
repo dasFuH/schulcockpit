@@ -10,6 +10,14 @@ const optionalText = z
   .optional()
   .transform((v) => (v === "" ? undefined : v));
 
+const email = z.string().trim().email("Ungültige E-Mail").max(200);
+const name = z.string().trim().min(1, "Name fehlt").max(100);
+const password = z.string().min(8, "Passwort muss mindestens 8 Zeichen haben").max(200);
+const optionalPassword = z.preprocess(
+  (v) => (v == null || (typeof v === "string" && v.trim() === "") ? undefined : v),
+  password.optional(),
+);
+
 export const fachSchema = z.object({
   name: z.string().trim().min(1, "Name fehlt").max(60),
   farbe: z
@@ -67,6 +75,37 @@ export const lernaufgabeSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.string().trim().email("Ungültige E-Mail"),
+  email,
   password: z.string().min(1, "Passwort fehlt"),
+});
+
+export const registerSchema = z
+  .object({
+    name,
+    email,
+    password,
+    passwordConfirm: z.string().min(1, "Passwort-Bestätigung fehlt"),
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    message: "Passwörter stimmen nicht überein",
+    path: ["passwordConfirm"],
+  });
+
+export const accountUpdateSchema = z.object({
+  name,
+  email,
+  currentPassword: z.string().optional(),
+  password: optionalPassword,
+});
+
+export const parentUserCreateSchema = z.object({
+  name,
+  email,
+  password,
+});
+
+export const parentUserUpdateSchema = z.object({
+  name,
+  email,
+  password: optionalPassword,
 });

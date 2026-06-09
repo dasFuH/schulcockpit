@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { BottomNav } from "@/components/BottomNav";
 import { logoutAction } from "@/app/actions/auth";
@@ -26,14 +27,24 @@ export default async function AppLayout({
             <span className="chip bg-slate-200 text-slate-600">Eltern</span>
           )}
         </div>
-        <form action={logoutAction}>
-          <button
-            type="submit"
-            className="text-sm text-slate-400 hover:text-slate-600"
-          >
-            Abmelden
-          </button>
-        </form>
+        <div className="flex items-center gap-3">
+          {session.role === "STUDENT" && (
+            <Link
+              href="/nutzer"
+              className="text-sm text-slate-400 hover:text-slate-600"
+            >
+              Nutzer
+            </Link>
+          )}
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="text-sm text-slate-400 hover:text-slate-600"
+            >
+              Abmelden
+            </button>
+          </form>
+        </div>
       </header>
 
       {/* Platz unten für die fixe Navigationsleiste */}

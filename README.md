@@ -13,6 +13,7 @@ Mittelpunkt; Eltern sehen nur einen groben Überblick.
 ## ✨ Funktionen (MVP)
 
 - **Login** mit zwei Rollen: Schüler:in (Vollzugriff) & Eltern (nur Überblick)
+- **Registrierung** für Schülerkonten und **Nutzerverwaltung** für verknüpfte Elternkonten
 - **Fächerverwaltung** mit Farben
 - **Hausaufgaben**: Fach, Abgabedatum, Aufwand, Status (offen/angefangen/erledigt),
   „Ich brauche Hilfe", Foto-/Datei-Anhang
@@ -52,6 +53,7 @@ Mittelpunkt; Eltern sehen nur einen groben Überblick.
 │  ├─ app/
 │  │  ├─ (app)/             # Eingeloggte Seiten (Dashboard, HA, Notizen, …)
 │  │  ├─ login/             # Login-Seite
+│  │  ├─ registrieren/      # Registrierung für Schülerkonten
 │  │  ├─ actions/           # Server Actions (CRUD)
 │  │  └─ api/files/         # Geschützte Datei-Auslieferung
 │  ├─ components/           # UI-Bausteine + Formulare
@@ -181,12 +183,20 @@ npm run db:seed         # Demo-Daten neu einspielen
 
 ---
 
+## 🏷️ Versionierung
+
+Die aktuelle App-Version steht in `package.json`. Release-Regeln sind in
+`RELEASE.md` dokumentiert, veröffentlichte Änderungen in `CHANGELOG.md`.
+
+---
+
 ## 🧭 Rollen & Datenschutz-Idee
 
 - **Schüler:in** hat den vollen Funktionsumfang und gestaltet ihre Ansicht selbst.
+- **Schüler:in** kann im Bereich „Nutzer" eigene Kontodaten pflegen und Elternkonten anlegen.
 - **Eltern** sehen nur: Anzahl offener Aufgaben, anstehende Klassenarbeiten,
   rote Themen und wo Hilfe gewünscht ist – **keine** Detailtexte, keine
-  Bearbeitung.
+  Bearbeitung. Elternkonten werden explizit einem Schülerkonto zugeordnet.
 
 ---
 

@@ -3,7 +3,7 @@ import { requireSession } from "@/lib/auth";
 import {
   getDashboardData,
   getElternUebersicht,
-  getSchuelerUserId,
+  getLinkedSchuelerUserId,
 } from "@/lib/queries";
 import { FachBadge, AmpelChip, EmptyState, SectionTitle } from "@/components/ui";
 import { faelligkeitLabel } from "@/lib/dates";
@@ -52,10 +52,10 @@ export default async function DashboardPage() {
 
   // Elternansicht: bewusst reduzierter Überblick
   if (session.role === "PARENT") {
-    const schuelerId = await getSchuelerUserId();
+    const schuelerId = await getLinkedSchuelerUserId(session.userId);
     if (!schuelerId) {
       return (
-        <EmptyState emoji="👋" text="Noch kein Schülerkonto vorhanden." />
+        <EmptyState emoji="👋" text="Dieses Elternkonto ist noch nicht verknüpft." />
       );
     }
     const data = await getElternUebersicht(schuelerId);

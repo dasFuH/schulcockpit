@@ -205,14 +205,11 @@ export async function getElternUebersicht(userId: string): Promise<{
   return { offeneAufgaben, kommendeArbeiten, roteThemen, hilfebedarf };
 }
 
-/**
- * Findet das Schülerkonto (für die Elternansicht).
- * MVP-Vereinfachung: das erste STUDENT-Konto im System.
- */
-export async function getSchuelerUserId(): Promise<string | null> {
-  const student = await prisma.user.findFirst({
-    where: { role: "STUDENT" },
-    orderBy: { createdAt: "asc" },
+/** Findet das mit einem Elternkonto verknüpfte Schülerkonto. */
+export async function getLinkedSchuelerUserId(parentUserId: string): Promise<string | null> {
+  const parent = await prisma.user.findFirst({
+    where: { id: parentUserId, role: "PARENT" },
+    select: { managedStudentId: true },
   });
-  return student?.id ?? null;
+  return parent?.managedStudentId ?? null;
 }
