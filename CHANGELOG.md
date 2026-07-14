@@ -4,6 +4,21 @@ Alle nennenswerten Änderungen an Schul-Cockpit werden hier dokumentiert.
 
 Dieses Projekt folgt SemVer. Die technische Versionsquelle ist `package.json`.
 
+## [0.3.0] - 2026-07-13
+
+### Added
+
+- Öffentlicher Passwort-Reset per konfigurierbarem SMTP mit den Seiten
+  „Passwort vergessen“ und „Passwort zurücksetzen“.
+- Einmalige, nach 15 Minuten ablaufende Reset-Tokens, deren SHA-256-Hash pro
+  Konto gespeichert wird.
+
+### Changed
+
+- Passwortwechsel widerrufen nun alle vorhandenen Sitzungen eines Kontos.
+- Dokumentation und Docker-Compose enthalten die SMTP-Konfiguration für den
+  Passwort-Reset.
+
 ## [0.2.0] - 2026-06-09
 
 ### Added

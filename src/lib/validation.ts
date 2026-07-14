@@ -79,6 +79,25 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Passwort fehlt"),
 });
 
+export const passwordResetRequestSchema = z.object({
+  email,
+});
+
+export const passwordResetTokenSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9_-]{43}$/, "Ungültiger Link");
+
+export const passwordResetSchema = z
+  .object({
+    token: passwordResetTokenSchema,
+    password,
+    passwordConfirm: z.string().min(1, "Passwort-Bestätigung fehlt"),
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    message: "Passwörter stimmen nicht überein",
+    path: ["passwordConfirm"],
+  });
+
 export const registerSchema = z
   .object({
     name,

@@ -56,21 +56,30 @@ export async function updateOwnAccount(formData: FormData) {
     if (!ok) throw new Error("CURRENT_PASSWORD_REQUIRED");
   }
 
+  const passwordHash = data.password
+    ? await hashPassword(data.password)
+    : undefined;
+
   const updated = await prisma.user.update({
     where: { id: session.userId },
     data: {
       name: data.name,
       email,
-      ...(data.password
-        ? { passwordHash: await hashPassword(data.password) }
+      ...(passwordHash
+        ? {
+            passwordHash,
+            passwordResetTokenHash: null,
+            passwordResetExpiresAt: null,
+            passwordResetRequestedAt: null,
+            sessionVersion: { increment: 1 },
+          }
         : {}),
     },
   });
 
   await createSession({
     userId: updated.id,
-    role: updated.role,
-    name: updated.name,
+    sessionVersion: updated.sessionVersion,
   });
   revalidatePath("/nutzer");
   revalidatePath("/");
@@ -115,13 +124,23 @@ export async function updateParentUser(id: string, formData: FormData) {
   if (!parent) throw new Error("FORBIDDEN");
   if (await emailBelongsToOtherUser(email, id)) throw new Error("EMAIL_EXISTS");
 
+  const passwordHash = data.password
+    ? await hashPassword(data.password)
+    : undefined;
+
   await prisma.user.update({
     where: { id },
     data: {
       name: data.name,
       email,
-      ...(data.password
-        ? { passwordHash: await hashPassword(data.password) }
+      ...(passwordHash
+        ? {
+            passwordHash,
+            passwordResetTokenHash: null,
+            passwordResetExpiresAt: null,
+            passwordResetRequestedAt: null,
+            sessionVersion: { increment: 1 },
+          }
         : {}),
     },
   });

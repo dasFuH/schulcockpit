@@ -6,6 +6,7 @@
  * - Zwei Rollen: STUDENT (Vollzugriff) und PARENT (nur Lesezugriff).
  */
 import "server-only";
+import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
@@ -29,6 +30,12 @@ export interface SessionPayload {
   userId: string;
   role: Role;
   name: string;
+  sessionVersion: number;
+}
+
+interface SessionTokenPayload {
+  userId: string;
+  sessionVersion: number;
 }
 
 /** Passwort prüfen. */
@@ -41,8 +48,13 @@ export function hashPassword(plain: string): Promise<string> {
   return bcrypt.hash(plain, 10);
 }
 
+/** Hash eines Passwort-Reset-Tokens. Nur der Hash wird persistiert. */
+export function hashPasswordResetToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
 /** Erstellt ein signiertes Session-JWT und setzt es als Cookie. */
-export async function createSession(payload: SessionPayload): Promise<void> {
+export async function createSession(payload: SessionTokenPayload): Promise<void> {
   const token = await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -66,10 +78,30 @@ export async function getSession(): Promise<SessionPayload | null> {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, getSecret());
+    const userId = payload.userId;
+    const tokenSessionVersion =
+      payload.sessionVersion === undefined ? 0 : payload.sessionVersion;
+
+    if (
+      typeof userId !== "string" ||
+      typeof tokenSessionVersion !== "number" ||
+      !Number.isSafeInteger(tokenSessionVersion) ||
+      tokenSessionVersion < 0
+    ) {
+      return null;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, name: true, sessionVersion: true },
+    });
+    if (!user || user.sessionVersion !== tokenSessionVersion) return null;
+
     return {
-      userId: payload.userId as string,
-      role: payload.role as Role,
-      name: payload.name as string,
+      userId: user.id,
+      role: user.role,
+      name: user.name,
+      sessionVersion: user.sessionVersion,
     };
   } catch {
     return null;
@@ -101,8 +133,12 @@ export async function login(
     userId: user.id,
     role: user.role,
     name: user.name,
+    sessionVersion: user.sessionVersion,
   };
-  await createSession(payload);
+  await createSession({
+    userId: payload.userId,
+    sessionVersion: payload.sessionVersion,
+  });
   return payload;
 }
 

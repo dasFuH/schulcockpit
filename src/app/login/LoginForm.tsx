@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { loginAction, type LoginState } from "@/app/actions/auth";
@@ -47,6 +48,12 @@ export function LoginForm() {
           className="field"
           placeholder="••••••••"
         />
+      </div>
+
+      <div className="-mt-2 text-right text-sm">
+        <Link href="/passwort-vergessen" className="font-medium text-brand">
+          Passwort vergessen?
+        </Link>
       </div>
 
       {state.fehler && (

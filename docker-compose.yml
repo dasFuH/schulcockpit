@@ -40,6 +40,8 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET muss gesetzt sein}
       UPLOAD_DIR: /app/uploads
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      SMTP_URL: ${SMTP_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-}
       SEED_ON_START: ${SEED_ON_START:-false}
       NODE_ENV: production
       PORT: 3000

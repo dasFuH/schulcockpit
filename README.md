@@ -111,12 +111,44 @@ docker compose up --build
 
 ---
 
+## 🔐 Passwort zurücksetzen per E-Mail
+
+Der Reset-Link wird über einen generischen SMTP-Server versendet. Ergänze in
+der produktiven `.env` zusätzlich zu `AUTH_SECRET` diese Werte:
+
+```dotenv
+# Die externe, kanonische App-URL ohne Pfad oder Query.
+NEXT_PUBLIC_APP_URL=https://cockpit.deine-domain.de
+
+# SMTP oder SMTPS, mit den Zugangsdaten deines Mail-Providers.
+SMTP_URL=smtps://benutzer:passwort@smtp.example.com:465
+MAIL_FROM="Schul-Cockpit <no-reply@deine-domain.de>"
+```
+
+`SMTP_URL`, `MAIL_FROM` und eine gültige `NEXT_PUBLIC_APP_URL` müssen alle
+gesetzt sein. Ohne vollständige Konfiguration zeigt die App vor jeder
+Kontosuche eine allgemeine Verfügbarkeitsmeldung und versendet keine E-Mail.
+Bitte hinterlege echte Zugangsdaten ausschließlich in der lokalen bzw.
+Server-`.env`, nie im Repository.
+
+Sicherheitsverhalten des Reset-Flows:
+
+- Für bekannte und unbekannte E-Mail-Adressen ist die Erfolgsmeldung identisch.
+- Ein Konto kann höchstens alle 60 Sekunden einen neuen Link anfordern.
+- Pro Konto ist nur ein Link aktiv; sein SHA-256-Hash wird gespeichert und er
+  läuft nach 15 Minuten ab.
+- Nach einem erfolgreichen Reset sowie jedem Passwortwechsel werden alle alten
+  Sitzungen widerrufen.
+
+---
+
 ## 🌐 Deployment auf einem VPS
 
 1. **Projekt auf den Server** bringen (git clone / scp) und `.env` anlegen:
    ```bash
    cp .env.example .env
-   # AUTH_SECRET (zufällig), POSTGRES_PASSWORD,
+   # AUTH_SECRET (zufällig), POSTGRES_PASSWORD, SMTP_URL, MAIL_FROM,
+   # NEXT_PUBLIC_APP_URL=https://cockpit.deine-domain.de,
    # APP_DOMAIN=cockpit.deine-domain.de, ACME_EMAIL=… setzen
    ```
 2. **DNS**: A-Record von `APP_DOMAIN` auf die Server-IP zeigen lassen.
